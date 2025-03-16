@@ -21,6 +21,12 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
   constructor() {
     super();
     this.title = "";
+    this.image = "";
+    this.description = "";
+    this.url = "";
+    this.loading = false;
+    this.fancy = false;
+    this.metadata = {}
     this.t = this.t || {};
     this.t = {
       ...this.t,
@@ -40,6 +46,12 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     return {
       ...super.properties,
       title: { type: String },
+      image: { type: String},
+      description: {type: String},
+      url: {type: String},
+      loading: { type: Boolean, Reflect: true },
+      fancy: { type: Boolean, Reflect: true },
+      metadata: { type: Object},
     };
   }
 
@@ -53,6 +65,54 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
         background-color: var(--ddd-theme-accent);
         font-family: var(--ddd-font-navigation);
       }
+      .card {
+         width: 350px;
+         border-radius: 8px;
+         margin: 20px auto;
+         box-shadow: 0px 4px 12px black;
+         text-align: center;
+         padding: 16px;
+         background-color: white;
+      }
+      .cardheader {
+        font-size: 20px;
+        margin-bottom: 10px;
+        height: auto;
+      }
+      .card img {
+        max-width: 100%;
+        border-radius: 5px;
+      }
+      button {
+        margin-top: 16px;
+        margin-bottom: 16px;
+        background-color: white; 
+        color: black; 
+        border: 1px solid gray; 
+        padding: 10px 16px; 
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      button:hover {
+        background-color: black; 
+        color: white; 
+        transition: 0.4s;
+      } 
+      .description { 
+        margin-top: 16px;
+        font-size: 16px; 
+        color: black;
+      }
+      details {
+        color: black;
+        padding: 10px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      details p {
+        color: black;
+      }
       .wrapper {
         margin: var(--ddd-spacing-2);
         padding: var(--ddd-spacing-4);
@@ -63,13 +123,64 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     `];
   }
 
+  async getData(link) {
+    const url = `https://open-apis.hax.cloud/api/services/website/metadata?q=${link}`;
+    try {
+      this.loading = true;
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Response status: ${response.status}`);
+      }
+    const json = await response.json();
+    console.log(json.data);
+
+    this.metadata = json.data
+    this.title = json.data["og:title"];
+    this.image = json.data["og:image"];
+    this.description = json.data["og:description"];
+    this.url = json.data["og:url"];
+    
+    console.log(json.data['url']);
+    if (json.data['cool:card']) {
+    }
+
+    document.querySelector('#here').innerHTML = JSON.stringify(json.data, null, 2);
+    document.querySelector('#there').innerHTML = json.data["og:site_name"];
+  } catch (error) {
+    console.error (error.message);
+  }
+}
+
+updated(changedProperties) {
+  if (changedProperties.has("url")) {
+    this.getData(this.url); 
+  }
+}
+
+openChanged(e) {
+  console.log(e.newState);
+  this.fancy = e.newState === "open"
+}
+
+
   // Lit render the HTML
   render() {
     return html`
-<div class="wrapper">
-  <h3><span>${this.t.title}:</span> ${this.title}</h3>
-  <slot></slot>
-</div>`;
+      <div class="card">
+        <h1 class="cardheader">${this.title}</h1>
+          <img src=${this.image} alt=${this.title} />
+        <details ?open="${this.fancy}" @toggle="${this.openChanged}">
+        <summary>Description</summary>
+        <div>
+        <p></p>
+        <slot>${this.description}</slot>
+        </div>
+        </details>
+        <a href=${this.url} target="_blank">
+          <button class="btn"><em>Go to Website</em></button>
+        </a>
+      </div>
+    </div>`;
   }
 
   /**
