@@ -78,10 +78,12 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
         font-size: 20px;
         margin-bottom: 10px;
         height: auto;
+        color: black;
       }
       .card img {
-        max-width: 100%;
+        max-width: 200px;
         border-radius: 5px;
+        margin-top: 10px;
       }
       button {
         margin-top: 16px;
@@ -135,8 +137,8 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     console.log(json.data);
 
     this.metadata = json.data
-    this.title = json.data["og:title"];
-    this.image = json.data["og:image"];
+    this.title = json.data["og:title"] || json.data["title"];
+    this.image = json.data["og:image"] || json.data["logo"] || ["image"];
     this.description = json.data["og:description"];
     this.url = json.data["og:url"];
     
@@ -144,8 +146,6 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     if (json.data['cool:card']) {
     }
 
-    document.querySelector('#here').innerHTML = JSON.stringify(json.data, null, 2);
-    document.querySelector('#there').innerHTML = json.data["og:site_name"];
   } catch (error) {
     console.error (error.message);
   }
@@ -165,22 +165,19 @@ openChanged(e) {
 
   // Lit render the HTML
   render() {
+
     return html`
       <div class="card">
         <h1 class="cardheader">${this.title}</h1>
-          <img src=${this.image} alt=${this.title} />
-        <details ?open="${this.fancy}" @toggle="${this.openChanged}">
-        <summary>Description</summary>
-        <div>
-        <p></p>
-        <slot>${this.description}</slot>
+        <img src=${this.image} alt=${this.title} />
+        <div class="description">
+          <slot>${this.description}</slot>
         </div>
-        </details>
         <a href=${this.url} target="_blank">
           <button class="btn"><em>Go to Website</em></button>
         </a>
       </div>
-    </div>`;
+    `;
   }
 
   /**
