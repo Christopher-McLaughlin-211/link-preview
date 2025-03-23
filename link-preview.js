@@ -8,7 +8,7 @@ import { I18NMixin } from "@haxtheweb/i18n-manager/lib/I18NMixin.js";
 
 /**
  * `link-preview`
- * 
+ *
  * @demo index.html
  * @element link-preview
  */
@@ -25,8 +25,6 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     this.description = "";
     this.url = "";
     this.loading = false;
-    this.fancy = false;
-    this.metadata = {}
     this.t = this.t || {};
     this.t = {
       ...this.t,
@@ -50,8 +48,6 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
       description: {type: String},
       url: {type: String},
       loading: { type: Boolean, Reflect: true },
-      fancy: { type: Boolean, Reflect: true },
-      metadata: { type: Object},
     };
   }
 
@@ -67,53 +63,63 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
       }
       .card {
          width: 350px;
-         border-radius: 8px;
+         border-radius: var(--ddd-radius-sm);
          margin: 20px auto;
-         box-shadow: 0px 4px 12px black;
+         box-shadow: var(--ddd-boxShadow-sm);
          text-align: center;
-         padding: 16px;
-         background-color: white;
+         padding: var(--ddd-spacing-4);;
+         background-color: var(--ddd-theme-default-coalyGray);
       }
-      .cardheader {
-        font-size: 20px;
-        margin-bottom: 10px;
-        height: auto;
-        color: black;
+      .title {
+        font-size: var(--ddd-font-size-s);
+        font-weight: var(--ddd-font-weight-bold);
+        margin-bottom: var(--ddd-spacing-2);
+        margin-top: var(--ddd-spacing-2);
+        color: var(--ddd-theme-default-white);
       }
       .card img {
         max-width: 200px;
-        border-radius: 5px;
-        margin-top: 10px;
+        max-height: 150px;
+        height: auto;
+        border-radius: var(--ddd-radius-sm);
+        border: var(--ddd-border-sm);
+        border-color: var(--ddd-border-color-white);
+        margin-top: var(--ddd-spacing-2);
+        margin-bottom: var(--ddd-spacing-2);
       }
       button {
-        margin-top: 16px;
-        margin-bottom: 16px;
-        background-color: white; 
-        color: black; 
-        border: 1px solid gray; 
-        padding: 10px 16px; 
-        border-radius: 5px;
+        background-color: var(--ddd-theme-default-white);
+        color: var(--ddd-theme-default-coalyGray);
+        margin-top: var(--ddd-spacing-2);
+        margin-bottom: var(--ddd-spacing-2);
+        padding: var(--ddd-spacing-2);
+        border: var(--ddd-border-sm);
+        border-radius: var(--ddd-radius-sm);
         cursor: pointer;
-        font-size: 16px;
+
       }
       button:hover {
-        background-color: black; 
-        color: white; 
+        background-color: var(--ddd-theme-default-coalyGray);
+        color: Var(--ddd-theme-default-white);
         transition: 0.4s;
-      } 
-      .description { 
-        margin-top: 16px;
-        font-size: 16px; 
-        color: black;
+      }
+      .description {
+        margin-top: var(--ddd-spacing-2);
+        margin-bottom: var(--ddd-spacing-2);
+        font-size: var(--ddd-font-size-xs);
+        color: var(--ddd-theme-default-white);
+        height: 70px;
+        overflow: auto;
       }
       details {
-        color: black;
-        padding: 10px 16px;
-        border-radius: 5px;
+        border-radius: var(--ddd-radius-sm);
+        border: var(--ddd-border-sm);
+        border-color: var(--ddd-border-color-white);
         cursor: pointer;
       }
-      details p {
-        color: black;
+      details summary {
+        padding: var(--ddd-spacing-2);
+        font-size: var(--ddd-font-size-xs);
       }
       .wrapper {
         margin: var(--ddd-spacing-2);
@@ -136,12 +142,10 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
     const json = await response.json();
     console.log(json.data);
 
-    this.metadata = json.data
     this.title = json.data["og:title"] || json.data["title"];
     this.image = json.data["og:image"] || json.data["logo"] || ["image"];
     this.description = json.data["og:description"];
     this.url = json.data["og:url"];
-    
     console.log(json.data['url']);
     if (json.data['cool:card']) {
     }
@@ -153,22 +157,16 @@ export class LinkPreview extends DDDSuper(I18NMixin(LitElement)) {
 
 updated(changedProperties) {
   if (changedProperties.has("url")) {
-    this.getData(this.url); 
+    this.getData(this.url);
   }
 }
-
-openChanged(e) {
-  console.log(e.newState);
-  this.fancy = e.newState === "open"
-}
-
 
   // Lit render the HTML
   render() {
 
     return html`
       <div class="card">
-        <h1 class="cardheader">${this.title}</h1>
+        <h1 class="title">${this.title}</h1>
         <img src=${this.image} alt=${this.title} />
         <div class="description">
           <slot>${this.description}</slot>
